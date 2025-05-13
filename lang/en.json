@@ -1,0 +1,11 @@
+{
+  "noWorkspace": "There are no open workspaces.",
+  "enterScriptName": "Please enter a script name.",
+  "enterDescription": "Please enter a description for your script.",
+  "selectServerModuleVer": "Please select a version of the @minecraft/server module.",
+  "selectUiModuleVer": "Please select a version of the @minecraft/server-ui module.",
+  "useUiModule": "Would you like to use the UI module?",
+  "yes": "yes", "no": "no",
+  "missingOption": "The input value is missing.",
+  "success": "The manifest has been created."
+}

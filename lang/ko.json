@@ -1,0 +1,11 @@
+{
+  "noWorkspace": "열린 워크스페이스가 없습니다.",
+  "enterScriptName": "스크립트명을 입력해주세요.",
+  "enterDescription": "스크립트에 대한 설명을 입력해주세요.",
+  "selectServerModuleVer": "@minecraft/server 모듈의 버전을 선택해주세요.",
+  "selectUiModuleVer": "@minecraft/server-ui 모듈의 버전을 선택해주세요.",
+  "useUiModule": "Ui모듈을 사용하시겠습니까?",
+  "yes": "예", "no": "아니오",
+  "missingOption": "입력값이 누락되었습니다.",
+  "success": "매니페스트를 생성하였습니다."
+}

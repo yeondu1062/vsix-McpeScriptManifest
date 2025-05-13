@@ -8,5 +8,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          VERSION=$(npm view @minecraft/server versions)
-          echo "module version: $VERSION"
+          VERSION=$(npm show @minecraft/server versions --json | jq -r '.[-1]')
+          echo "Latest module version: $VERSION"

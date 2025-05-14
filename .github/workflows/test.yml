@@ -17,7 +17,7 @@ jobs:
         id: get_version
         run: |
           VERSION="test"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "::set-output name=version::$VERSION"
 
       - name: Add version to moduleVersions.json if needed
         run: |
@@ -28,4 +28,11 @@ jobs:
           
           if [ "$VERSION" != "$CURRENT_TOP" ]; then
             jq --arg ver "$VERSION" '.server |= [$ver] + .' "$FILE" > tmp.json && mv tmp.json "$FILE"
+            
+            git config --global user.name "GitHub Actions"
+            git config --global user.email "actions@github.com"
+            
+            git add "$FILE"
+            git commit -m "Update moduleVersions.json with version $VERSION"
+            git push
           fi

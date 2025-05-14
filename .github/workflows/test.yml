@@ -16,7 +16,10 @@ jobs:
       - name: Get latest stable version
         id: get_version
         run: |
-          VERSION="test"
+          VERSION=$(npm show @minecraft/server versions --json | jq -r '
+            map(select(test("^(?!.*preview)"))) | .[-1] |
+            try match(".*(-beta)").string // .
+          ')
           echo "::set-output name=version::$VERSION"
 
       - name: Add version to moduleVersions.json if needed

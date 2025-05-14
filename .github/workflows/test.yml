@@ -7,10 +7,28 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
       - name: Get latest stable version
+        id: get_version
         run: |
           VERSION=$(npm show @minecraft/server versions --json | jq -r '
             map(select(test("^(?!.*preview)"))) | .[-1] |
             try match(".*(-beta)").string // .
           ')
-          echo "Latest stable module version: $VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Add version to moduleVersions.json if needed
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          FILE="moduleVersions.json"
+          
+          CURRENT_TOP=$(jq -r '.server[0]' "$FILE")
+          
+          if [ "$VERSION" != "$CURRENT_TOP" ]; then
+            jq --arg ver "$VERSION" '.server |= [$ver] + .' "$FILE" > tmp.json && mv tmp.json "$FILE"
+          fi

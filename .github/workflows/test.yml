@@ -8,5 +8,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          VERSION=$(npm show @minecraft/server versions --json | jq -r 'map(select(test("^(?!.*preview)"))) | .[-1] | sub("(-beta).*"; "\1")')
+          VERSION=$(npm show @minecraft/server versions --json | jq -r 'map(select(test("^(?!.*preview)"))) | .[-1] | sub("(-beta).*"; "\\1")')
           echo "Latest stable module version: $VERSION"

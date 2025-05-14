@@ -1,41 +1,49 @@
-name: Test
+name: Update Module Versions
 
 on:
   workflow_dispatch:
-
+  schedule:
+    - cron: '0 10 * * *'
+    
 jobs:
-  test:
+  update_versions:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Install jq
-        run: sudo apt-get update && sudo apt-get install -y jq
+      - run: sudo apt-get update && sudo apt-get install -y jq
 
-      - name: Get latest stable version
-        id: get_version
+      - id: get_versions
         run: |
-          VERSION=$(npm show @minecraft/server versions --json | jq -r '
-            map(select(test("^(?!.*preview)"))) | .[-1] |
-            try match(".*(-beta)").string // .
-          ')
-          echo "::set-output name=version::$VERSION"
+          get_latest() {
+            npm show "$1" versions --json | jq -r 'map(select(test("^(?!.*preview)"))) | .[-1] | try match(".*(-beta)").string // .'
+          }
+          echo "server=$(get_latest @minecraft/server)" >> "$GITHUB_OUTPUT"
+          echo "ui=$(get_latest @minecraft/server-ui)" >> "$GITHUB_OUTPUT"
 
-      - name: Add version to moduleVersions.json if needed
-        run: |
-          VERSION="${{ steps.get_version.outputs.version }}"
+      - run: |
           FILE="moduleVersions.json"
-          
-          CURRENT_TOP=$(jq -r '.server[0]' "$FILE")
-          
-          if [ "$VERSION" != "$CURRENT_TOP" ]; then
-            jq --arg ver "$VERSION" '.server |= [$ver] + .' "$FILE" > tmp.json && mv tmp.json "$FILE"
-            
-            git config --global user.name "github-actions[bot]"
-            git config --global user.email "github-actions[bot]@users.noreply.github.com"
-            
+          [ -f "$FILE" ] || echo '{ "server": [], "ui": [] }' > "$FILE"
+
+          UPDATED=false
+
+          sv="${{ steps.get_versions.outputs.server }}"
+          uv="${{ steps.get_versions.outputs.ui }}"
+
+          if [ "$sv" != "$(jq -r '.server[0]' "$FILE")" ]; then
+            jq --arg v "$sv" '.server |= [$v] + .' "$FILE" > tmp && mv tmp "$FILE"
+            UPDATED=true
+          fi
+
+          if [ "$uv" != "$(jq -r '.ui[0]' "$FILE")" ]; then
+            jq --arg v "$uv" '.ui |= [$v] + .' "$FILE" > tmp && mv tmp "$FILE"
+            UPDATED=true
+          fi
+
+          if $UPDATED; then
+            git config --global user.name github-actions[bot]
+            git config --global user.email github-actions[bot]@users.noreply.github.com
             git add "$FILE"
-            git commit -m "Update moduleVersions.json with version $VERSION"
+            git commit -m "Update moduleVersions.json"
             git push
           fi

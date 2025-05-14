@@ -7,8 +7,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - run: |
+      - name: Get latest stable version
+        run: |
           VERSION=$(npm show @minecraft/server versions --json | jq -r '
-            map(select(test("^(?!.*preview)"))) | .[-1] | match(".*(-beta)").string
+            map(select(test("^(?!.*preview)"))) | .[-1] |
+            try match(".*(-beta)").string // .
           ')
           echo "Latest stable module version: $VERSION"

@@ -1,10 +1,9 @@
 name: Publish Extension
 
 on:
-  workflow_run:
-    workflows: ["Update Module Versions"]
-    types:
-      - completed
+  push:
+    paths:
+      - package.json
 
 jobs:
   publish:

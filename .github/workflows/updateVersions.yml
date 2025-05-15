@@ -1,0 +1,49 @@
+name: Update Module Versions
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 10 * * *'
+    
+jobs:
+  update_versions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - run: sudo apt-get update && sudo apt-get install -y jq
+
+      - id: get_versions
+        run: |
+          get_latest() {
+            npm show "$1" versions --json | jq -r 'map(select(test("^(?!.*preview)"))) | .[-1] | try match(".*(-beta)").string // .'
+          }
+          echo "server=$(get_latest @minecraft/server)" >> "$GITHUB_OUTPUT"
+          echo "ui=$(get_latest @minecraft/server-ui)" >> "$GITHUB_OUTPUT"
+
+      - run: |
+          FILE="moduleVersions.json"
+          [ -f "$FILE" ] || echo '{ "server": [], "ui": [] }' > "$FILE"
+
+          UPDATED=false
+
+          sv="${{ steps.get_versions.outputs.server }}"
+          uv="${{ steps.get_versions.outputs.ui }}"
+
+          if [ "$sv" != "$(jq -r '.server[0]' "$FILE")" ]; then
+            jq --arg v "$sv" '.server |= [$v] + .' "$FILE" > tmp && mv tmp "$FILE"
+            UPDATED=true
+          fi
+
+          if [ "$uv" != "$(jq -r '.ui[0]' "$FILE")" ]; then
+            jq --arg v "$uv" '.ui |= [$v] + .' "$FILE" > tmp && mv tmp "$FILE"
+            UPDATED=true
+          fi
+
+          if $UPDATED; then
+            git config --global user.name github-actions[bot]
+            git config --global user.email github-actions[bot]@users.noreply.github.com
+            git add "$FILE"
+            git commit -m "Update Versions (server $sv, ui $uv)"
+            git push
+          fi

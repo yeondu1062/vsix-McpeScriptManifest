@@ -1,0 +1,21 @@
+name: Publish Extension
+
+on:
+  push:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Node dependencies
+        run: npm install
+
+      - name: Install vsce
+        run: npm install -g vsce
+
+      - name: Publish to VS Code Marketplace
+        env:
+          VSCE_PAT: ${{ secrets.VSCODE_MARKETPLACE_TOKEN }}
+        run: vsce publish -p "$VSCE_PAT"

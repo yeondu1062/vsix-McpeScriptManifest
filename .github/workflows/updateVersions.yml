@@ -31,12 +31,17 @@ jobs:
           uv="${{ steps.get_versions.outputs.ui }}"
 
           if [ "$sv" != "$(jq -r '.server[0]' "$FILE")" ]; then
-            jq --arg v "$sv" '.server |= [$v] + .' "$FILE" > tmp && mv tmp "$FILE"
-            UPDATED=true
+            jq --arg v "$sv" '
+              .server[0] |= sub("-beta"; "")
+              | .server |= [$v] + .
+            ' "$FILE" > tmp && mv tmp "$FILE"
           fi
 
           if [ "$uv" != "$(jq -r '.ui[0]' "$FILE")" ]; then
-            jq --arg v "$uv" '.ui |= [$v] + .' "$FILE" > tmp && mv tmp "$FILE"
+            jq --arg v "$uv" '
+              .ui[0] |= sub("-beta"; "")
+              | .ui |= [$v] + .
+            ' "$FILE" > tmp && mv tmp "$FILE"
             UPDATED=true
           fi
 

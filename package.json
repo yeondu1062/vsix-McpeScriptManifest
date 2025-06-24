@@ -6,7 +6,7 @@
     "type": "git",
     "url": "https://github.com/yeondu1062/vsix-McpeScriptManifest"
   },
-  "version": "1.0.6",
+  "version": "1.0.7",
   "publisher": "yeondu1062",
   "engines": {
     "vscode": "^1.100.0"
